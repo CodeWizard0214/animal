@@ -103,9 +103,13 @@
           speciesCode: speciesCode,
           mediaType: "imageEssentialSet",
         };
-        const queryString = new URLSearchParams(params).toString();
-        const response = await fetch(`${url}?${queryString}`);
-        return await response.json();
+        try {
+          const queryString = new URLSearchParams(params).toString();
+          const response = await fetch(`${url}?${queryString}`);
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching", error);
+        }
       }
 
       (async () => {
@@ -128,7 +132,7 @@
                             <img src="${data.photoSrc}" class="card-img-top" alt="Animal 1">
                             <div class="card-body">
                             <h5 class="card-title">${data.comName}</h5>
-                            <p class="card-text">Location: Africa</p>
+                            <p class="card-text">Location: ${data.locName}</p>
                             </div>
                         </div>
                         </div>`;
