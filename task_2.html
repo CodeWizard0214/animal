@@ -48,15 +48,13 @@
           }
           const speciesString = speciesArr.join(",");
           const result = await getBirdPhoto(speciesString);
-          const keys = Object.keys(result);
-          let photos = [];
-          for (let i = 0; i < keys.length; i++) {
-            const assetId = result[keys[i]].assetId;
-            const photoUrl = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${assetId}/2400`;
-            photos.push(photoUrl);
-          }
           const res = data.map((item, idx) => {
-            return { ...item, photoSrc: photos[idx] };
+            return {
+              ...item,
+              photoSrc: `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${
+                result[item.speciesCode].assetId
+              }/2400`,
+            };
           });
           return res;
         } catch (error) {
