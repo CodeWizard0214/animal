@@ -13,8 +13,8 @@
     <title>Animal Show</title>
   </head>
   <body>
-    <div class="container mt-5">
-      <form class="row d-flex align-items-center">
+    <div class="container-fluid mt-5">
+      <form class="row d-flex align-items-center" onsubmit="submitForm(event)">
         <div class="form-group col-md-3">
           <label for="latitude">Latitude</label>
           <input
@@ -52,10 +52,37 @@
         </div>
 
         <div class="form-group col-md-3">
-          <button type="submit" class="btn btn-primary mt-4">Search</button>
+          <button id="submit" type="submit" class="btn btn-primary mt-4">
+            Search
+          </button>
         </div>
       </form>
-      <div id="birdInfoContainer" class="mt-3 row"></div>
+      <div
+        id="birdInfoSlide"
+        class="mt-3 row carousel slide"
+        data-ride="carousel"
+      >
+        <ol class="carousel-indicators" id="slideIndicator"></ol>
+        <div class="carousel-inner" id="birdInfoContainer"></div>
+        <a
+          class="carousel-control-prev"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a
+          class="carousel-control-next"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true" ></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
@@ -80,7 +107,12 @@
           const speciesString = speciesArr.join(",");
           const result = await getBirdPhoto(speciesString);
           const res = data.map((item, idx) => {
-            return { ...item, photoSrc: `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${result[item.speciesCode].assetId}/2400`};
+            return {
+              ...item,
+              photoSrc: `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${
+                result[item.speciesCode].assetId
+              }/2400`,
+            };
           });
           return res;
         } catch (error) {
@@ -105,7 +137,10 @@
         }
       }
 
-      (async () => {
+      const submitForm = async (event) => {
+        event.preventDefault();
+        const pageCount = 10;
+        const rowCount = 5;
         const lat = document.getElementById("latitude").value;
         const lng = document.getElementById("longitude").value;
         const dist = document.getElementById("distance").value;
@@ -117,20 +152,38 @@
           maxResults
         );
         const birdInfoContainer = document.getElementById("birdInfoContainer");
+        const birdInfoSlider = document.getElementById("slideIndicator");
+        birdInfoSlider.innerHTML = "";
         let birdInfo = "";
+        let indicatorInfo = "";
         for (let i = 0; i < recentSightings.length; i++) {
           const data = recentSightings[i];
-          birdInfo += `<div class="col-md-4 mb-4">
-                        <div class="card">
-                            <img src="${data.photoSrc}" class="card-img-top" alt="Animal 1">
-                            <div class="card-body">
+          if (i % pageCount === 0) {
+            birdInfo += `<div class="carousel-item ${
+              i === 0 ? "active" : ""
+            }"><div class = "row mx-2 row-cols-5">`;
+            birdInfoSlider.innerHTML += `<li data-target="#birdInfoSlide" class="bg-success" data-slide-to="${Math.ceil(
+              i / pageCount
+            )}" ${i === 0 ? 'class="active"' : ""} class="active"></li>`;
+          }
+          birdInfo += `<div class="px-3"><div class="card col mb-4 px-0">
+                          <img src="${data.photoSrc}" class="card-img-top w-full" alt="Animal 1">
+                          <div class="card-body">
                             <h5 class="card-title">${data.comName}</h5>
                             <p class="card-text">Location: ${data.locName}</p>
-                            </div>
+                          </div>
                         </div>
-                        </div>`;
+                        </div>
+                      `;
+          if (i % pageCount === pageCount - 1) {
+            birdInfo += "</div></div>";
+          }
         }
         birdInfoContainer.innerHTML = birdInfo;
+      };
+
+      (() => {
+        document.getElementById("submit").click();
       })();
     </script>
   </body>
