@@ -2,25 +2,95 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bird Sightings</title>
-    <style>
-      img {
-        max-width: 100%;
-        height: auto;
-        margin-top: 10px;
-      }
-    </style>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <title>Animal Show</title>
   </head>
   <body>
-    <!-- Container for displaying bird information -->
-    <div id="birdInfoContainer"></div>
+    <div class="container-fluid mt-5">
+      <form class="row d-flex align-items-center" onsubmit="submitForm(event)">
+        <div class="form-group col-md-3">
+          <label for="latitude">Latitude</label>
+          <input
+            type="number"
+            class="form-control"
+            id="latitude"
+            placeholder="Enter latitude"
+            step="any"
+            value="42.478572"
+          />
+        </div>
 
+        <div class="form-group col-md-3">
+          <label for="longitude">Longitude</label>
+          <input
+            type="number"
+            class="form-control"
+            id="longitude"
+            placeholder="Enter longitude"
+            step="any"
+            value="-76.45152"
+          />
+        </div>
+
+        <div class="form-group col-md-3">
+          <label for="distance">Distance</label>
+          <input
+            type="number"
+            class="form-control"
+            id="distance"
+            placeholder="Enter distance"
+            step="any"
+            value="1"
+          />
+        </div>
+
+        <div class="form-group col-md-3">
+          <button id="submit" type="submit" class="btn btn-primary mt-4">
+            Search
+          </button>
+        </div>
+      </form>
+      <div
+        id="birdInfoSlide"
+        class="mt-3 row carousel slide"
+        data-ride="carousel"
+      >
+        <ol class="carousel-indicators" id="slideIndicator"></ol>
+        <div class="carousel-inner" id="birdInfoContainer"></div>
+        <a
+          class="carousel-control-prev"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a
+          class="carousel-control-next"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true" ></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-      // API key for eBird API
       const apiKey = "3pn0jnrpfjre";
 
-      // Function to make API calls and retrieve recent bird sightings
       async function getRecentSightings(lat, lng, dist, maxResults) {
         const url = `https://api.ebird.org/v2/data/obs/geo/recent?lat=${lat}&lng=${lng}&dist=${dist}&category=species&includeProvisional=false&maxResults=${maxResults}`;
         const headers = new Headers({
@@ -30,107 +100,90 @@
         try {
           const response = await fetch(url, { headers });
           const data = await response.json();
-          return data;
+          let speciesArr = [];
+          for (let i = 0; i < data.length; i++) {
+            speciesArr.push(data[i].speciesCode);
+          }
+          const speciesString = speciesArr.join(",");
+          const result = await getBirdPhoto(speciesString);
+          const res = data.map((item, idx) => {
+            return {
+              ...item,
+              photoSrc: `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${
+                result[item.speciesCode].assetId
+              }/2400`,
+            };
+          });
+          return res;
         } catch (error) {
           console.error("Error fetching recent sightings:", error);
         }
       }
 
-      // Function to get bird photo using curated media API
       async function getBirdPhoto(speciesCode) {
-        const mediaUrl = "https://taxonomy.api.macaulaylibrary.org/media";
-        const key = "PUB1258538706";
-        const mediaType = "imageEssentialSet";
-
-        const url = `${mediaUrl}?key=${key}&speciesCode=${speciesCode}&mediaType=${mediaType}`;
-        console.log(url, "----------------");
-
-        try {
-          const response = await fetch(url);
-          const data = await response.json();
-          console.log(data, "++++++++++++++++++++++");
-
-          if (data && speciesCode in data) {
-            const assetId = data[speciesCode].assetId;
-            const photoUrl = `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${assetId}/2400`;
-            return photoUrl;
-          } else {
-            return null;
-          }
-        } catch (error) {
-          console.error("Error fetching bird photo:", error);
-        }
-      }
-
-      // Function to display bird information
-      async function displayBirdInfo(bird) {
-        const birdInfoContainer = document.getElementById("birdInfoContainer");
-
-        const infoDiv = document.createElement("div");
-        infoDiv.innerHTML = `
-        <p><strong>Common Name:</strong> ${bird.comName}</p>
-        <p><strong>Location Name:</strong> ${bird.locName}</p>
-    `;
-
-        // Get bird photo
-        const photoUrl = await getBirdPhoto(bird.speciesCode);
-        if (photoUrl) {
-          const img = document.createElement("img");
-          img.src = photoUrl;
-          infoDiv.appendChild(img);
-        } else {
-          infoDiv.innerHTML += "<p>No photo available</p>";
-        }
-
-        birdInfoContainer.appendChild(infoDiv);
-      }
-
-      // Part one: Display recent bird sightings
-      const lat = 42.478572;
-      const lng = -76.45152;
-      const dist = 1;
-      const maxResults = 50;
-
-      (async () => {
-        var options = {
-          method: "GET",
-          headers: {
-            Accept: "*/*",
-          },
-        };
-
-        var url = "https://marketplaceapi.rareoasis.io/api/v1/collection/animalAsset/";
+        var url =
+          "https://marketplaceapi.rareoasis.io/api/v1/collection/animalAsset/";
         const params = {
           key: "PUB1258538706",
-          speciesCode: "bkbwar",
+          speciesCode: speciesCode,
           mediaType: "imageEssentialSet",
         };
-        const queryString = new URLSearchParams(params).toString();
-        fetch(`${url}?${queryString}`)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error("Network response was not ok");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            console.log(data);
-          })
-          .catch((error) => {
-            console.error(
-              "There was a problem with the fetch operation:",
-              error
-            );
-          });
+        try {
+          const queryString = new URLSearchParams(params).toString();
+          const response = await fetch(`${url}?${queryString}`);
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching", error);
+        }
+      }
 
-        // const recentSightings = await getRecentSightings(lat, lng, dist, maxResults);
+      const submitForm = async (event) => {
+        event.preventDefault();
+        const pageCount = 10;
+        const rowCount = 5;
+        const lat = document.getElementById("latitude").value;
+        const lng = document.getElementById("longitude").value;
+        const dist = document.getElementById("distance").value;
+        const maxResults = 50;
+        const recentSightings = await getRecentSightings(
+          lat,
+          lng,
+          dist,
+          maxResults
+        );
+        const birdInfoContainer = document.getElementById("birdInfoContainer");
+        const birdInfoSlider = document.getElementById("slideIndicator");
+        birdInfoSlider.innerHTML = "";
+        let birdInfo = "";
+        let indicatorInfo = "";
+        for (let i = 0; i < recentSightings.length; i++) {
+          const data = recentSightings[i];
+          if (i % pageCount === 0) {
+            birdInfo += `<div class="carousel-item ${
+              i === 0 ? "active" : ""
+            }"><div class = "row mx-2 row-cols-5">`;
+            birdInfoSlider.innerHTML += `<li data-target="#birdInfoSlide" class="bg-success" data-slide-to="${Math.ceil(
+              i / pageCount
+            )}" ${i === 0 ? 'class="active"' : ""} class="active"></li>`;
+          }
+          birdInfo += `<div class="px-3"><div class="card col mb-4 px-0">
+                          <img src="${data.photoSrc}" class="card-img-top w-full" alt="Animal 1">
+                          <div class="card-body">
+                            <h5 class="card-title">${data.comName}</h5>
+                            <p class="card-text">Location: ${data.locName}</p>
+                          </div>
+                        </div>
+                        </div>
+                      `;
+          if (i % pageCount === pageCount - 1) {
+            birdInfo += "</div></div>";
+          }
+        }
+        birdInfoContainer.innerHTML = birdInfo;
+      };
 
-        // for (let i = 0; i < recentSightings.length; i++) {
-        //     if (i % 10 === 0 && i !== 0) {
-        //         await new Promise(resolve => setTimeout(resolve, 5000));  // Pause every 10 birds for 5 seconds
-        //     }
-        //     await displayBirdInfo(recentSightings[i]);
-        // }
+      (() => {
+        document.getElementById("submit").click();
       })();
     </script>
   </body>
