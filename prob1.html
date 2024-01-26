@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <title>Animal Show</title>
+  </head>
+  <body>
+    <div class="container-fluid mt-5">
+      <form class="row d-flex align-items-center" onsubmit="submitForm(event)">
+        <div class="form-group col-md-3">
+          <label for="latitude">Latitude</label>
+          <input
+            type="number"
+            class="form-control"
+            id="latitude"
+            placeholder="Enter latitude"
+            step="any"
+            value="42.478572"
+          />
+        </div>
+
+        <div class="form-group col-md-3">
+          <label for="longitude">Longitude</label>
+          <input
+            type="number"
+            class="form-control"
+            id="longitude"
+            placeholder="Enter longitude"
+            step="any"
+            value="-76.45152"
+          />
+        </div>
+
+        <div class="form-group col-md-3">
+          <label for="distance">Distance</label>
+          <input
+            type="number"
+            class="form-control"
+            id="distance"
+            placeholder="Enter distance"
+            step="any"
+            value="1"
+          />
+        </div>
+
+        <div class="form-group col-md-3">
+          <button id="submit" type="submit" class="btn btn-primary mt-4">
+            Search
+          </button>
+        </div>
+      </form>
+      <div
+        id="birdInfoSlide"
+        class="mt-3 row carousel slide"
+        data-ride="carousel"
+      >
+        <ol class="carousel-indicators" id="slideIndicator"></ol>
+        <div class="carousel-inner" id="birdInfoContainer"></div>
+        <a
+          class="carousel-control-prev"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="prev"
+        >
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a
+          class="carousel-control-next"
+          href="#birdInfoSlide"
+          role="button"
+          data-slide="next"
+        >
+          <span class="carousel-control-next-icon" aria-hidden="true" ></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+      const apiKey = "3pn0jnrpfjre";
+
+      async function getRecentSightings(lat, lng, dist, maxResults) {
+        const url = `https://api.ebird.org/v2/data/obs/geo/recent?lat=${lat}&lng=${lng}&dist=${dist}&category=species&includeProvisional=false&maxResults=${maxResults}`;
+        const headers = new Headers({
+          "X-eBirdApiToken": apiKey,
+        });
+
+        try {
+          const response = await fetch(url, { headers });
+          const data = await response.json();
+          let speciesArr = [];
+          for (let i = 0; i < data.length; i++) {
+            speciesArr.push(data[i].speciesCode);
+          }
+          const speciesString = speciesArr.join(",");
+          const result = await getBirdPhoto(speciesString);
+          const res = data.map((item, idx) => {
+            return {
+              ...item,
+              photoSrc: `https://cdn.download.ams.birds.cornell.edu/api/v2/asset/${
+                result[item.speciesCode].assetId
+              }/2400`,
+            };
+          });
+          return res;
+        } catch (error) {
+          console.error("Error fetching recent sightings:", error);
+        }
+      }
+
+      async function getBirdPhoto(speciesCode) {
+        var url =
+          "https://marketplaceapi.rareoasis.io/api/v1/collection/animalAsset/";
+        const params = {
+          key: "PUB1258538706",
+          speciesCode: speciesCode,
+          mediaType: "imageEssentialSet",
+        };
+        try {
+          const queryString = new URLSearchParams(params).toString();
+          const response = await fetch(`${url}?${queryString}`);
+          return await response.json();
+        } catch (error) {
+          console.error("Error fetching", error);
+        }
+      }
+
+      const submitForm = async (event) => {
+        event.preventDefault();
+        const pageCount = 10;
+        const rowCount = 5;
+        const lat = document.getElementById("latitude").value;
+        const lng = document.getElementById("longitude").value;
+        const dist = document.getElementById("distance").value;
+        const maxResults = 50;
+        const recentSightings = await getRecentSightings(
+          lat,
+          lng,
+          dist,
+          maxResults
+        );
+        const birdInfoContainer = document.getElementById("birdInfoContainer");
+        const birdInfoSlider = document.getElementById("slideIndicator");
+        birdInfoSlider.innerHTML = "";
+        let birdInfo = "";
+        let indicatorInfo = "";
+        for (let i = 0; i < recentSightings.length; i++) {
+          const data = recentSightings[i];
+          if (i % pageCount === 0) {
+            birdInfo += `<div class="carousel-item ${
+              i === 0 ? "active" : ""
+            }"><div class = "row mx-2 row-cols-5">`;
+            birdInfoSlider.innerHTML += `<li data-target="#birdInfoSlide" class="bg-success" data-slide-to="${Math.ceil(
+              i / pageCount
+            )}" ${i === 0 ? 'class="active"' : ""} class="active"></li>`;
+          }
+          birdInfo += `<div class="px-3"><div class="card col mb-4 px-0">
+                          <img src="${data.photoSrc}" class="card-img-top w-full" alt="Animal 1">
+                          <div class="card-body">
+                            <h5 class="card-title">${data.comName}</h5>
+                            <p class="card-text">Location: ${data.locName}</p>
+                          </div>
+                        </div>
+                        </div>
+                      `;
+          if (i % pageCount === pageCount - 1) {
+            birdInfo += "</div></div>";
+          }
+        }
+        birdInfoContainer.innerHTML = birdInfo;
+      };
+
+      (() => {
+        document.getElementById("submit").click();
+      })();
+    </script>
+  </body>
+</html>
