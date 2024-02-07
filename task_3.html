@@ -12,8 +12,9 @@
     />
     <title>Animal Show</title>
     <style>
-      #appearedBird .row.mx-2.row-cols-5 > .px-3.my-3:first-of-type {
-        animation: fadeOpacity 2s ease-in-out infinite;
+      #appearedBird .row.mx-2.row-cols-5 > .px-3.my-3.flash-effect {
+        animation: fadeOpacity 2s ease-in-out;
+        animation-iteration-count: 3;
       }
       @keyframes fadeOpacity {
         from {
@@ -212,12 +213,30 @@
         })
           .then((response) => response.json())
           .then((data) => {
-            const createTime = moment.utc().format("YYYY-MM-DD HH:mm:ss");
-            console.log(createTime, "-----");
+            const now = new Date();
+            const options = {
+              timeZone: "America/New_York",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            };
+            const newYorkTime = now.toLocaleString("en-US", options);
+
+            // Extract and reformat the desired format (YYYY-MM-DD HH:mm:ss)
+            const [datePart, timePart] = newYorkTime.split(", ");
+            const [month, day, year] = datePart.split("/");
+            const [hour, minute, second] = timePart.split(":");
+            const formattedNewYorkTime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+            console.log("Current New York Time:", formattedNewYorkTime);
             // $(".toast").toast("show");
             if (data.code == 200) {
               let html = "";
-              html += "<div class='px-3 my-3'>";
+              html += "<div class='px-3 my-3 flash-effect'>";
               html += "<div class='card col px-0 h-100'>";
               html +=
                 '<img src="' +
@@ -227,7 +246,7 @@
                 '<div class="card-body"><h5 class="card-title">' +
                 name +
                 '</h5> <h6 class="">' +
-                createTime +
+                  formattedNewYorkTime +
                 "</h6></div>";
 
               html += "</div>";
