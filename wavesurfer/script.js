@@ -97,7 +97,7 @@ const toggleMute = () => {
 
 // Create a new instance and load the wavesurfer
 const wavesurfer = initializeWavesurfer();
-wavesurfer.load('http://localhost:3000/613602094.mp3');
+wavesurfer.load('https://animal-delta.vercel.app/1.mp3');
 
 // --------------------------------------------------------- //
 
