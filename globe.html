@@ -1,185 +1,170 @@
 <head>
-    <style>
-      body {
-        margin: 0;
-        background-image: url("space-bkg.jpg");
-        background-size: cover;
-        background-position: center;
-      }
-      .interface {
-        position: absolute;
-        width: 15%;
-        height: 20%;
-        bottom: 0px;
-        right: 1%;
-        z-index: 100;
-        pointer-events: none;
-      }
-      #globeViz {
-        position: absolute;
-        left: 16%;
-        top: -8.5%;
-        width: 84%;
-        height: 100%;
-        z-index: 0;
-        overflow: hidden;
-        scroll-behavior: ;
-      }
-    </style>
-    <script
-      src="https://code.jquery.com/jquery-3.7.1.min.js"
-      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://unpkg.com/three"></script>
-    <script src="globe.js"></script>
-    <script src="https://livesubs.ornith.cornell.edu/socket.io/socket.io.js"></script>
-  </head>
-  
-  <body>
-    <div class="interface">
-      <img src="globe-interface.png" width="100%" height="auto" alt="" />
-    </div>
-    <div id="globeViz"></div>
-    <script>
-      const feature = {
-        type: "Feature",
-        properties: {
-          scalerank: 0,
-          natscale: 600,
-          labelrank: 2,
-          featurecla: "",
-          name: "",
-          namepar: "",
-          namealt: null,
-          diffascii: 0,
-          nameascii: "",
-          adm0cap: 1,
-          capalt: null,
-          capin: null,
-          worldcity: 1,
-          megacity: 1,
-          sov0name: "",
-          sov_a3: "",
-          adm0name: "",
-          adm0_a3: "",
-          adm1name: "",
-          iso_a2: "",
-          note: null,
-          latitude: 0,
-          longitude: 0,
-          changed: 0,
-          namediff: 0,
-          diffnote: null,
-          pop_max: 10452000,
-          pop_min: 10452000,
-          pop_other: 10585385,
-          rank_max: 14,
-          rank_min: 14,
-          geonameid: 524901,
-          meganame: "",
-          ls_name: "",
-          ls_match: 1,
-          checkme: 0,
-          min_zoom: 1.7,
-        },
-        bbox: [37.613577, 55.75411, 37.613577, 55.75411],
-        geometry: { type: "Point", coordinates: [37.613577, 55.75411] },
-      };
-      const data = {
-        type: "FeatureCollection",
-        features: [],
-        bbox: [
-          -175.220564477617, -41.2999878536917, 179.216647094029,
-          64.1500236197392,
-        ],
-      };
-  
-      const world = Globe({ animateIn: false })(
-        document.getElementById("globeViz")
+  <style>
+    body {
+      margin: 0;
+      background-image: url("space-bkg.jpg");
+      background-size: cover;
+      background-position: center;
+    }
+    .interface {
+      position: absolute;
+      width: 15%;
+      height: 20%;
+      bottom: 0px;
+      right: 1%;
+      z-index: 100;
+      pointer-events: none;
+    }
+    #globeViz {
+      position: absolute;
+      left: 16%;
+      top: -8.5%;
+      width: 84%;
+      height: 100%;
+      z-index: 0;
+      overflow: hidden;
+      scroll-behavior: ;
+    }
+  </style>
+  <script
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"
+  ></script>
+  <script src="https://unpkg.com/three"></script>
+  <script src="globe.js"></script>
+  <script src="https://livesubs.ornith.cornell.edu/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <div class="interface">
+    <img src="globe-interface.png" width="100%" height="auto" alt="" />
+  </div>
+  <div id="globeViz"></div>
+  <script>
+    const feature = {
+      type: "Feature",
+      properties: {
+        scalerank: 0,
+        natscale: 600,
+        labelrank: 2,
+        featurecla: "",
+        name: "",
+        namepar: "",
+        namealt: null,
+        diffascii: 0,
+        nameascii: "",
+        adm0cap: 1,
+        capalt: null,
+        capin: null,
+        worldcity: 1,
+        megacity: 1,
+        sov0name: "",
+        sov_a3: "",
+        adm0name: "",
+        adm0_a3: "",
+        adm1name: "",
+        iso_a2: "",
+        note: null,
+        latitude: 0,
+        longitude: 0,
+        changed: 0,
+        namediff: 0,
+        diffnote: null,
+        pop_max: 10452000,
+        pop_min: 10452000,
+        pop_other: 10585385,
+        rank_max: 14,
+        rank_min: 14,
+        geonameid: 524901,
+        meganame: "",
+        ls_name: "",
+        ls_match: 1,
+        checkme: 0,
+        min_zoom: 1.7,
+      },
+      bbox: [37.613577, 55.75411, 37.613577, 55.75411],
+      geometry: { type: "Point", coordinates: [37.613577, 55.75411] },
+    };
+    const data = {
+      type: "FeatureCollection",
+      features: [],
+      bbox: [
+        -175.220564477617, -41.2999878536917, 179.216647094029,
+        64.1500236197392,
+      ],
+    };
+
+    const world = Globe({ animateIn: false })(
+      document.getElementById("globeViz")
+    )
+
+      .labelsData(data.features)
+      .labelLat((d) => d.properties.latitude)
+      .labelLng((d) => d.properties.longitude)
+      .labelText((d) => d.properties.name)
+      .labelSize((d) => Math.sqrt(d.properties.pop_max) * 6e-4)
+      .labelDotRadius((d) =>
+        d.new
+          ? Math.sqrt(d.properties.pop_max) * 1e-4
+          : Math.sqrt(d.properties.pop_max) * 1e-4
       )
-  
-        .labelsData(data.features)
-        .labelLat((d) => d.properties.latitude)
-        .labelLng((d) => d.properties.longitude)
-        .labelText((d) => d.properties.name)
-        .labelSize((d) => Math.sqrt(d.properties.pop_max) * 6e-4)
-        .labelDotRadius((d) =>
-          d.new
-            ? Math.sqrt(d.properties.pop_max) * 1e-4
-            : Math.sqrt(d.properties.pop_max) * 1e-4
-        )
-        .labelColor((d) =>
-          d.new
-            ? "rgb(205, 54, 38)"
-            : d.hours >= 3
-            ? "rgb(117, 159, 191)"
-            : d.hours >= 2
-            ? "rgb(154, 200, 145)"
-            : "rgb(245, 191, 68)"
-        )
-        .labelResolution(0)
-        .labelAltitude((d) =>
-          d.new ? ".06" : d.hours >= 3 ? ".01" : d.hours >= 2 ? ".02" : ".04"
-        )
-        .globeImageUrl(
-          "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-        )
-        .bumpImageUrl(
-          "https://unpkg.com/three-globe/example/img/earth-topology.png"
-        );
-  
-      // Auto-rotate
-      world.controls().autoRotate = true;
-      world.controls().autoRotateSpeed = 0.5;
-      world.controls().enableZoom = true;
-  
-      const url = "https://merlinglobe-1ab0512223a0.herokuapp.com/";
-      // const url = "http://localhost:8000";
-      const socket = io.connect(url, {
-        transports: ["websocket"],
-      });
-      socket.on("connect_error", (e) => {
-        console.log("eeror");
-        console.log(e);
-      });
-      socket.on("connect", () => {
-        console.log("connected to the socket server");
-      });
-  
-      socket.on("new-data", function (e) {
-        const { newData, oldData } = e;
-        console.log("new");
-  
-        let features = newData.map((mapdata) => ({
-          ...feature,
-          properties: {
-            ...feature.properties,
-            latitude: mapdata.lat,
-            longitude: mapdata.lng,
-          },
-          new: true,
-          hours: mapdata.hours,
-        }));
-        features = [
-          ...features,
-          ...oldData.map((mapdata) => ({
-            ...feature,
-            properties: {
-              ...feature.properties,
-              latitude: mapdata.lat,
-              longitude: mapdata.lng,
-            },
-            hours: mapdata.hours,
-          })),
-        ];
-  
-        world.labelsData(features);
-      });
-      socket.on("historic-data", function (e) {
-        console.log("old Data");
-  
-        const features = e.map((mapdata) => ({
+      .labelColor((d) => {
+        console.log(d.new, d.hours, "----------")
+        d.new
+          ? "rgb(205, 54, 38)"
+          : d.hours >= 3
+          ? "rgb(117, 159, 191)"
+          : d.hours >= 2
+          ? "rgb(154, 200, 145)"
+          : "rgb(245, 191, 68)";
+      })
+      .labelResolution(0)
+      .labelAltitude((d) =>
+        d.new ? ".06" : d.hours >= 3 ? ".01" : d.hours >= 2 ? ".02" : ".04"
+      )
+      .globeImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+      )
+      .bumpImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-topology.png"
+      );
+
+    // Auto-rotate
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.5;
+    world.controls().enableZoom = true;
+
+    const url = "https://merlinglobe-1ab0512223a0.herokuapp.com/";
+    // const url = "http://localhost:8000";
+    const socket = io.connect(url, {
+      transports: ["websocket"],
+    });
+    socket.on("connect_error", (e) => {
+      console.log("eeror");
+      console.log(e);
+    });
+    socket.on("connect", () => {
+      console.log("connected to the socket server");
+    });
+
+    socket.on("new-data", function (e) {
+      const { newData, oldData } = e;
+      console.log("new");
+
+      let features = newData.map((mapdata) => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          latitude: mapdata.lat,
+          longitude: mapdata.lng,
+        },
+        new: true,
+        hours: mapdata.hours,
+      }));
+      features = [
+        ...features,
+        ...oldData.map((mapdata) => ({
           ...feature,
           properties: {
             ...feature.properties,
@@ -187,9 +172,25 @@
             longitude: mapdata.lng,
           },
           hours: mapdata.hours,
-        }));
-        world.labelsData(features);
-      });
-    </script>
-  </body>
-  
+        })),
+      ];
+      console.log(features);
+
+      world.labelsData(features);
+    });
+    socket.on("historic-data", function (e) {
+      console.log("old Data");
+
+      const features = e.map((mapdata) => ({
+        ...feature,
+        properties: {
+          ...feature.properties,
+          latitude: mapdata.lat,
+          longitude: mapdata.lng,
+        },
+        hours: mapdata.hours,
+      }));
+      world.labelsData(features);
+    });
+  </script>
+</body>
