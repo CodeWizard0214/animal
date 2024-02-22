@@ -109,8 +109,7 @@
           ? Math.sqrt(d.properties.pop_max) * 1e-4
           : Math.sqrt(d.properties.pop_max) * 1e-4
       )
-      .labelColor((d) => {
-        console.log(d.new, d.hours, "----------")
+      .labelColor((d) => 
         d.new
           ? "rgb(205, 54, 38)"
           : d.hours >= 3
@@ -118,7 +117,7 @@
           : d.hours >= 2
           ? "rgb(154, 200, 145)"
           : "rgb(245, 191, 68)"
-      })
+      )
       .labelResolution(0)
       .labelAltitude((d) =>
         d.new ? ".06" : d.hours >= 3 ? ".01" : d.hours >= 2 ? ".02" : ".04"
