@@ -15,10 +15,27 @@ const totalDuration = document.querySelector('#totalDuration');
 const initializeWavesurfer = () => {
   return WaveSurfer.create({
     container: '#waveform',
+    waveColor: "#eee",
+    progressColor: "OrangeRed",
+    cursorColor: "OrangeRed",
+    barWidth: 3,
+    barRadius: 3,
     responsive: true,
-    height: 80,
-    waveColor: '#ff5501',
-    progressColor: '#d44700',
+    height: 150,
+    // If true, normalize by the maximum peak instead of 1.0.
+    normalize: true,
+    // Use the PeakCache to improve rendering speed of large waveforms.
+    partialRender: true,
+    plugins: [
+      // Initialize Spectrogram plugin
+      WaveSurfer.spectrogram.create({
+        container: '#waveform',
+        labels: true,
+        height: 200,
+        splitChannels: true,
+        // Other Spectrogram options can be set here
+      })
+    ]
   });
 };
 
